@@ -1,0 +1,79 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum EstadoInscripcion {
+  PENDIENTE
+  APROBADA
+  RECHAZADA
+}
+
+model User {
+  id            Int           @id @default(autoincrement())
+  nombre        String
+  email         String        @unique
+  password      String
+  role          Role          @default(USER)
+  createdAt     DateTime      @default(now())
+  inscripciones Inscripcion[]
+
+  @@map("users")
+}
+
+model Entrenador {
+  id               Int     @id @default(autoincrement())
+  nombre           String
+  especialidad     String
+  experienciaAnios Int
+  fotoUrl          String?
+  grupos           Grupo[]
+
+  @@map("entrenadores")
+}
+
+model Grupo {
+  id            Int           @id @default(autoincrement())
+  nombre        String
+  categoria     String
+  edadMin       Int
+  edadMax       Int
+  horario       String
+  cupos         Int
+  precioMensual Int
+  descripcion   String
+  imagenUrl     String?
+  entrenadorId  Int
+  entrenador    Entrenador    @relation(fields: [entrenadorId], references: [id], onDelete: Restrict)
+  inscripciones Inscripcion[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@map("grupos")
+}
+
+model Inscripcion {
+  id               Int               @id @default(autoincrement())
+  nombreDeportista String
+  edadDeportista   Int
+  telefono         String
+  comentarios      String?
+  estado           EstadoInscripcion @default(PENDIENTE)
+  userId           Int
+  grupoId          Int
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  grupo            Grupo             @relation(fields: [grupoId], references: [id], onDelete: Cascade)
+  createdAt        DateTime          @default(now())
+
+  @@map("inscripciones")
+}
