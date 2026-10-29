@@ -4,10 +4,14 @@
   "description": "API REST de la escuela de baloncesto Titanes",
   "main": "dist/server.js",
   "type": "commonjs",
+    "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "prisma generate && tsc",
     "start": "node dist/server.js",
+    "test": "tsx --test tests/auth.middleware.test.ts",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:seed": "prisma db seed"
