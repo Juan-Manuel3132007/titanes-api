@@ -1,0 +1,50 @@
+@baseUrl = http://localhost:4000/api
+
+### Registro nuevo → 201
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "nombre": "Juan Prueba",
+  "email": "juan@prueba.com",
+  "password": "Juan12345"
+}
+
+### Registro repetido → 409
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "nombre": "Juan Prueba",
+  "email": "juan@prueba.com",
+  "password": "Juan12345"
+}
+
+### Registro con datos malos → 400
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "nombre": "J",
+  "email": "no-es-email",
+  "password": "123"
+}
+
+### Login correcto → 200
+# @name loginUser
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "usuario@titanes.com",
+  "password": "Usuario12345"
+}
+
+### Login con contraseña mala → 401
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "usuario@titanes.com",
+  "password": "otra-cosa"
+}
