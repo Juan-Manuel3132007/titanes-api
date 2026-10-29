@@ -19,6 +19,12 @@ enum EstadoInscripcion {
   RECHAZADA
 }
 
+enum Experiencia {
+  NINGUNA
+  MENOS_DE_UN_ANIO
+  MAS_DE_UN_ANIO
+}
+
 model User {
   id            Int           @id @default(autoincrement())
   nombre        String
@@ -31,11 +37,24 @@ model User {
   @@map("users")
 }
 
+model Categoria {
+  clave   String   @id
+  nombre  String
+  edades  String
+  resumen String
+  trabajo String[]
+  torneos String[]
+  grupos  Grupo[]
+
+  @@map("categorias")
+}
+
 model Entrenador {
   id               Int     @id @default(autoincrement())
   nombre           String
   especialidad     String
   experienciaAnios Int
+  bio              String
   fotoUrl          String?
   grupos           Grupo[]
 
@@ -43,37 +62,47 @@ model Entrenador {
 }
 
 model Grupo {
-  id            Int           @id @default(autoincrement())
-  nombre        String
-  categoria     String
-  edadMin       Int
-  edadMax       Int
-  horario       String
-  cupos         Int
-  precioMensual Int
-  descripcion   String
-  imagenUrl     String?
-  entrenadorId  Int
-  entrenador    Entrenador    @relation(fields: [entrenadorId], references: [id], onDelete: Restrict)
-  inscripciones Inscripcion[]
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  id             Int           @id @default(autoincrement())
+  nombre         String
+  categoriaClave String
+  categoria      Categoria     @relation(fields: [categoriaClave], references: [clave], onDelete: Restrict, onUpdate: Cascade)
+  edadMin        Int
+  edadMax        Int
+  dias           String
+  horario        String
+  precio         Int
+  cupos          Int
+  descripcion    String
+  imagenUrl      String?
+  entrenadorId   Int
+  entrenador     Entrenador    @relation(fields: [entrenadorId], references: [id], onDelete: Restrict)
+  inscripciones  Inscripcion[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 
+  @@index([categoriaClave])
   @@map("grupos")
 }
 
 model Inscripcion {
-  id               Int               @id @default(autoincrement())
-  nombreDeportista String
-  edadDeportista   Int
-  telefono         String
-  comentarios      String?
-  estado           EstadoInscripcion @default(PENDIENTE)
-  userId           Int
-  grupoId          Int
-  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  grupo            Grupo             @relation(fields: [grupoId], references: [id], onDelete: Cascade)
-  createdAt        DateTime          @default(now())
+  id                Int               @id @default(autoincrement())
+  nombreAspirante   String
+  edad              Int
+  correo            String
+  telefono          String
+  experiencia       Experiencia
+  nombreAcudiente   String?
+  telefonoAcudiente String?
+  permisoAcudiente  Boolean           @default(false)
+  mensaje           String?           @db.VarChar(300)
+  aceptaDatos       Boolean
+  estado            EstadoInscripcion @default(PENDIENTE)
+  userId            Int
+  grupoId           Int
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  grupo             Grupo             @relation(fields: [grupoId], references: [id], onDelete: Cascade)
+  createdAt         DateTime          @default(now())
 
+  @@index([userId])
   @@map("inscripciones")
 }
