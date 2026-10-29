@@ -1,17 +1,19 @@
 import type { ErrorRequestHandler, RequestHandler } from 'express';
-import { Prisma } from '@prisma/client';
 import { ZodError } from 'zod';
 import { AppError } from '../../../domain/errors/AppError';
+import { traducirErrorPrisma } from '../../../infrastructure/prisma/prismaErrors';
 
 export const notFoundHandler: RequestHandler = (req, res) => {
   res.status(404).json({ error: `Ruta no encontrada: ${req.method} ${req.originalUrl}` });
 };
 
 export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
-  if (err instanceof AppError) {
-    res.status(err.statusCode).json({
-      error: err.message,
-      ...(err.details !== undefined ? { details: err.details } : {}),
+  const errorApp = err instanceof AppError ? err : traducirErrorPrisma(err);
+
+  if (errorApp) {
+    res.status(errorApp.statusCode).json({
+      error: errorApp.message,
+      ...(errorApp.details !== undefined ? { details: errorApp.details } : {}),
     });
     return;
   }
@@ -25,21 +27,6 @@ export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
       })),
     });
     return;
-  }
-
-  if (err instanceof Prisma.PrismaClientKnownRequestError) {
-    if (err.code === 'P2002') {
-      res.status(409).json({ error: 'El registro ya existe' });
-      return;
-    }
-    if (err.code === 'P2025') {
-      res.status(404).json({ error: 'Recurso no encontrado' });
-      return;
-    }
-    if (err.code === 'P2003') {
-      res.status(400).json({ error: 'Referencia inválida a otro registro' });
-      return;
-    }
   }
 
   if (err instanceof SyntaxError && 'body' in err) {
